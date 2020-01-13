@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     print(f"Top tags: {top_tags}")
 
-    from tagger.featureextraction.tfidf import Tfidf
+    from tagger._featureextraction.tfidf import Tfidf
 
     bow = Tfidf()
     docs = [
@@ -114,11 +114,11 @@ if __name__ == '__main__':
     print(bow.fit_transform(docs))
     print(bow._vectorizer.vocabulary_)
 
-    from tagger.preprocessing.html import HTMLToText
-    from tagger.preprocessing.lowercase import Lowercase
-    from tagger.preprocessing.tokenization import Tokenize
-    from tagger.classification.naivebayes import NaiveBayes
-    from tagger.featureextraction.bags import BagOfWords
+    from tagger._preprocessing.html import HTMLToText
+    from tagger._preprocessing.lowercase import Lowercase
+    from tagger._preprocessing.tokenization import Tokenize
+    from tagger._classification.naivebayes import NaiveBayes
+    from tagger._featureextraction.bags import BagOfWords
 
     from sklearn.pipeline import Pipeline
 
