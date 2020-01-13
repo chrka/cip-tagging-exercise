@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 from os import path
 this_directory = path.abspath(path.dirname(__file__))
@@ -13,7 +13,7 @@ setup(
     author="Christoffer Karlsson",
     author_email="chrka@mac.com",
     license="MIT",
-    packages=['tagger'],
+    packages=find_packages(),
     install_requires=['numpy', 'pandas', 'scikit-learn', 'nltk'],
     zip_safe=False,
     long_description=long_description,
