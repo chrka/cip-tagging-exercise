@@ -117,6 +117,7 @@ if __name__ == '__main__':
     from tagger._preprocessing.html import HTMLToText
     from tagger._preprocessing.lowercase import Lowercase
     from tagger._preprocessing.tokenization import Tokenize
+    from tagger._preprocessing.ngram import NGram
     from tagger._classification.naivebayes import NaiveBayes
     from tagger._featureextraction.bags import BagOfWords
 
@@ -134,7 +135,8 @@ if __name__ == '__main__':
         ('html', HTMLToText()),
         ('lower', Lowercase()),
         ('token', Tokenize()),
-        ('tfidf', Tfidf()),
+        ('ngram', NGram(2, 2)),
+        ('bow', BagOfWords()),
         ('clf', NaiveBayes())
     ])
 
@@ -172,3 +174,6 @@ if __name__ == '__main__':
 
     print(events_train.iloc[0], tags_train[0])
     print(top_tags[tags_train[0] > 0])
+
+    print("Dictionary")
+    print(pipeline_tfidf.named_steps['bow']._vectorizer.vocabulary_)
