@@ -1,8 +1,8 @@
-from tagger._preprocessing.html import HTMLToText
-from tagger._preprocessing.lowercase import Lowercase
-from tagger._preprocessing.tokenization import Tokenize
+from ._preprocessing.html import HTMLToText
+from ._preprocessing.lowercase import Lowercase
+from ._preprocessing.tokenization import Tokenize
 
-from tagger._featureextraction.bags import BagOfWords
-from tagger._featureextraction.tfidf import Tfidf
+from ._featureextraction.bags import BagOfWords
+from ._featureextraction.tfidf import Tfidf
 
-from tagger._classification.naivebayes import NaiveBayes
+from ._classification.naivebayes import NaiveBayes
