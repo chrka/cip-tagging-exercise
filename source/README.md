@@ -4,7 +4,7 @@
 ## Installation
 
 ```shell script
-pip install 'git+https://github.com/chrka/cip-tagging-exercise.git#egg=pkg&subdirectory=source'
+pip install 'git+https://github.com/chrka/cip-tagging-exercise.git#egg=tagger&subdirectory=source'
 ```
 
 ## Usage
