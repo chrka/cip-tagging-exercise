@@ -1,8 +1,8 @@
-from ._preprocessing.html import HTMLToText
-from ._preprocessing.lowercase import Lowercase
-from ._preprocessing.tokenization import Tokenize
+from .preprocessing.html import HTMLToText
+from .preprocessing.lowercase import Lowercase
+from .preprocessing.tokenization import Tokenize
 
-from ._featureextraction.bags import BagOfWords
-from ._featureextraction.tfidf import Tfidf
+from .featureextraction.bags import BagOfWords
+from .featureextraction.tfidf import Tfidf
 
-from ._classification.naivebayes import NaiveBayes
+from .classification.naivebayes import NaiveBayes
