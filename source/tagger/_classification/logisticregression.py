@@ -7,7 +7,10 @@ class LogisticRegression(BaseEstimator):
         pass
 
     def fit(self, X, y):
-        self._clf = OneVsRestClassifier(SKLearnLR())
+        # TODO: Consider pure (no penalty) LR
+        # TODO: Look into convergence issues with other (faster) solvers
+        #       (Also running into some version-related issues.)
+        self._clf = OneVsRestClassifier(SKLearnLR(solver='liblinear'))
         self._clf.fit(X, y)
         return self
 

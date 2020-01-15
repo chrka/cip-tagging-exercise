@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import fasttext
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split
 
@@ -23,6 +24,9 @@ def load_raw_normalized_dataset(path, drop_missing):
 
     # Drop any events with missing titles or descriptions
     cip_df.dropna(subset=['title', 'description'], inplace=True)
+
+    # Convert time strings to actual times
+    cip_df['time'] = pd.to_datetime(cip_df['time']).dt.time
 
     events_df = cip_df.groupby('id').first().drop(
         columns=['tag_status', 'tag']).reset_index()
@@ -67,6 +71,7 @@ def tags_to_matrix(events_df, tags_df, top_tags):
 
 def load_datasets(path, drop_missing=True, n_tags=72,
                   test_size=0.2, random_state=42):
+    """Load and split dataset."""
     events_df, tags_df = load_raw_normalized_dataset(path,
                                                      drop_missing=drop_missing)
     top_tags = calculate_top_tags(tags_df, n_tags=n_tags)
@@ -79,7 +84,7 @@ def load_datasets(path, drop_missing=True, n_tags=72,
     # Split data into public training set and private test set
     # (for exercise, take tag status into account)
     events_train, events_test, tags_train, tags_test = \
-        train_test_split(events_df,tag_matrix, test_size=test_size,
+        train_test_split(events_df, tag_matrix, test_size=test_size,
                          random_state=random_state)
 
     return events_train, tags_train, events_test, tags_test, top_tags
@@ -87,93 +92,38 @@ def load_datasets(path, drop_missing=True, n_tags=72,
 
 def extract_corpus(events_df):
     """Extract text corpus from event descriptions."""
-    pass
+    from tagger._preprocessing.html import HTMLToText
+    from tagger._preprocessing.characterset import CharacterSet
+    from tagger._preprocessing.lowercase import Lowercase
+    from sklearn.pipeline import Pipeline
+    cleaning_pipeline = Pipeline([
+        ('html', HTMLToText()),
+        ('cset', CharacterSet(punctuation=False)),
+        ('lcase', Lowercase())
+    ])
+    return list(cleaning_pipeline.fit_transform(events_df['description']))
 
+def fasttext_wordvectors(corpus_path, model_path):
+    model = fasttext.train_unsupervised(corpus_path)
+    model.save_model(model_path)
+    return model
+
+def save_corpus(events_df, path):
+    corpus = extract_corpus(events_df)
+    with open(path, 'w') as f:
+        for doc in corpus:
+            f.write(doc + '\n')
 
 if __name__ == '__main__':
     import os
 
     print("Current working directory:", os.getcwd())
-    events_train, tags_train, events_test, tags_test, top_tags = load_datasets(
-        "../../../data/raw/citypolarna_public_events_out.csv")
-    print(f"Number of events: {len(events_train)}")
-    print(f"Number of tag rows: {len(tags_train)}")
 
-    print(f"Number of missing titles: {events_train['title'].isna().sum()}")
-    print(f"Number of missing desc: {events_train['description'].isna().sum()}")
+    events_df, _ = load_raw_normalized_dataset(
+        "../../../data/raw/citypolarna_public_events_out.csv",
+        drop_missing=True)
+    CORPUS_PATH = '../../../data/corpus.txt'
+    MODEL_PATH = '../../../data/wordvectors.bin'
+    save_corpus(events_df, CORPUS_PATH)
+    model = fasttext_wordvectors(CORPUS_PATH, MODEL_PATH)
 
-    print(f"Top tags: {top_tags}")
-
-    from tagger._featureextraction.tfidf import Tfidf
-
-    bow = Tfidf()
-    docs = [
-        ['hej', 'dags', 'igen'],
-        ['hej', 'världen', 'hej', 'Världen']
-    ]
-    print(bow.fit_transform(docs))
-    print(bow._vectorizer.vocabulary_)
-
-    from tagger._preprocessing.html import HTMLToText
-    from tagger._preprocessing.lowercase import Lowercase
-    from tagger._preprocessing.tokenization import Tokenize
-    from tagger._preprocessing.ngram import NGram
-    from tagger._classification.naivebayes import NaiveBayes
-    from tagger._featureextraction.bags import BagOfWords
-
-    from sklearn.pipeline import Pipeline
-
-    pipeline_bow = Pipeline([
-        ('html', HTMLToText()),
-        ('lower', Lowercase()),
-        ('token', Tokenize()),
-        ('bow', BagOfWords()),
-        ('clf', NaiveBayes())
-    ])
-
-    pipeline_tfidf = Pipeline([
-        ('html', HTMLToText()),
-        ('lower', Lowercase()),
-        ('token', Tokenize()),
-        ('ngram', NGram(2, 2)),
-        ('bow', BagOfWords()),
-        ('clf', NaiveBayes())
-    ])
-
-    pipeline_bow.fit(events_train['description'], tags_train)
-    tags_pred_bow = pipeline_bow.predict(events_test['description'])
-
-    pipeline_tfidf.fit(events_train['description'], tags_train)
-    tags_pred_tfidf = pipeline_tfidf.predict(events_test['description'])
-
-
-    print("BoW -----")
-    print(tags_pred_bow[0:5])
-    print("------")
-    print(tags_test[0:5])
-    print()
-
-    print("Tfidf -----")
-    print(tags_pred_tfidf[0:5])
-    print("------")
-    print(tags_test[0:5])
-    print()
-
-
-    # Per-row mean accuracy
-    print(f"BOW per-row: {np.mean(tags_pred_bow == tags_test, axis=1)}")
-    print(f"Tfidf per-row: {np.mean(tags_pred_tfidf == tags_test, axis=1)}")
-
-    # Subset accuracy
-    ssa_bow = np.min(tags_pred_bow == tags_test, axis=1)
-    print(f"BoW SSA: {np.mean(ssa_bow)}")
-
-    ssa_tfidf = np.min(tags_pred_tfidf == tags_test, axis=1)
-    print(f"TFIDF SSA: {np.mean(ssa_tfidf)}")
-
-
-    print(events_train.iloc[0], tags_train[0])
-    print(top_tags[tags_train[0] > 0])
-
-    print("Dictionary")
-    print(pipeline_tfidf.named_steps['bow']._vectorizer.vocabulary_)

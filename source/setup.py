@@ -14,7 +14,8 @@ setup(
     author_email="chrka@mac.com",
     license="MIT",
     packages=find_packages(),
-    install_requires=['numpy', 'pandas', 'scikit-learn', 'nltk'],
+    install_requires=['numpy', 'pandas', 'scikit-learn', 'nltk', 'fasttext',
+                      'tqdm', 'keras', 'tensorflow'],
     zip_safe=False,
     long_description=long_description,
     long_description_content_type='text/markdown'
