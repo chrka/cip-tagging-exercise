@@ -1,5 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
+# TODO: Move to feature extraction
+
 class SparseToDense(BaseEstimator, TransformerMixin):
     def __init__(self):
         pass

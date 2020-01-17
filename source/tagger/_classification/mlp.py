@@ -9,12 +9,11 @@ from keras.losses import binary_crossentropy
 # Hardcoded for now
 N_TOP_TAGS = 72
 
+# relu often performs better, but has a tendency to vanish
+MLP_ACTIVIATION = 'tanh'
 
 class MultiLayerPerceptron(BaseEstimator):
-    def __init__(self, layers=None, epochs=16, batch_size=64):
-        if layers is None:
-            layers = [128, 64, 32]
-
+    def __init__(self, layers, epochs=16, batch_size=64):
         self.layers = layers
         self.epochs = epochs
         self.batch_size = batch_size
