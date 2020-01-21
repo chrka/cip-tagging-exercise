@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import fasttext
 from sklearn.preprocessing import MultiLabelBinarizer
-from skmultilearn.model_selection import IterativeStratification, iterative_train_test_split
+from skmultilearn.model_selection import IterativeStratification, \
+    iterative_train_test_split
 
 CIP_TAGS = list(map(lambda x: x.strip(),
                     "gratis, mat, musik, kurs, casino, dans, musuem, inlines, "
@@ -52,7 +53,7 @@ def load_raw_normalized_dataset(path, drop_missing):
         'removed': cip_df['tag_status'] == 2
     })
 
-    # For sample demo only, ignore verified and remove 'removed' tags
+    # Ignore verified and remove 'removed' tags
     tags_df = tags_df[~tags_df['removed']]
     tags_df.drop(columns=['verified', 'removed'], inplace=True)
 
@@ -60,12 +61,14 @@ def load_raw_normalized_dataset(path, drop_missing):
 
 
 def calculate_top_tags(tags_df, n_tags, use_cip_tags=True):
+    tag_counts = tags_df['tag'].value_counts()
     if use_cip_tags:
         # Not all CiP tags are necessarily present in the dataset
-        present_tags = set(tags_df['tag'].unique())
+        # and not necessarily in sufficient amounts
+        present_tags = set(tag_counts[tag_counts > 5].index)
         return list(filter(lambda t: t in present_tags, CIP_TAGS))
     else:
-        return tags_df['tag'].value_counts().index[:n_tags]
+        return tag_counts.index[:n_tags]
 
 
 def tags_to_matrix(events_df, tags_df, top_tags):
@@ -111,9 +114,15 @@ def load_datasets(path, drop_missing=True, n_tags=72,
                                tag_matrix[train_indices, :]
 
     events_test, tags_test = events_df.iloc[test_indices], \
-                               tag_matrix[test_indices, :]
+                             tag_matrix[test_indices, :]
 
-    return events_train, tags_train, events_test, tags_test, top_tags
+    tags_train_stats = pd.DataFrame({
+        'tag': top_tags,
+        'count': tags_train.sum(axis=0)
+    }).sort_values('count', ascending=False)
+
+    return (events_train, tags_train, events_test, tags_test, top_tags,
+            tags_train_stats)
 
 
 def extract_corpus(events_df):
@@ -148,7 +157,7 @@ if __name__ == '__main__':
 
     print("Current working directory:", os.getcwd())
 
-    events_df, _ = load_raw_normalized_dataset(
+    events_df, tags_df = load_raw_normalized_dataset(
         "../../../data/raw/citypolarna_public_events_out.csv",
         drop_missing=True)
     CORPUS_PATH = '../../../data/corpus.txt'
@@ -156,7 +165,7 @@ if __name__ == '__main__':
     save_corpus(events_df, CORPUS_PATH)
     model = fasttext_wordvectors(CORPUS_PATH, MODEL_PATH)
 
-    events_train, tags_train, events_test, tags_test, top_tags = load_datasets(
+    events_train, tags_train, events_test, tags_test, top_tags, tags_train_stats = load_datasets(
         "../../../data/raw/citypolarna_public_events_out.csv"
     )
 

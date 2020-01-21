@@ -18,5 +18,6 @@ from ._classification.logisticregression import LogisticRegression
 from ._classification.mlp import MultiLayerPerceptron
 
 from ._evaluation.perlabel import evaluate_per_label
+from ._evaluation.overall import evaluate_classifier
 
 from ._submission.submit import submit_model
