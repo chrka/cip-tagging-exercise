@@ -2,7 +2,22 @@ import numpy as np
 import pandas as pd
 import fasttext
 from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.model_selection import train_test_split
+from skmultilearn.model_selection import IterativeStratification, iterative_train_test_split
+
+CIP_TAGS = list(map(lambda x: x.strip(),
+                    "gratis, mat, musik, kurs, casino, dans, musuem, inlines, "
+                    "båt, barn, film, språk, hockey, bowling, fika, sport, "
+                    "biljard, bingo, bio, opera, kultur, grilla, kubb, "
+                    "festival, cykel, brännboll, picknick, konsert, pub, "
+                    "frisbeegolf, mc, gokart, svamp, bangolf, teater, "
+                    "afterwork, promenad, humor, utmaning, fest, shopping, "
+                    "resa, sällskapsspel, träna, pubquiz, poker, bok, foto, "
+                    "hund, skridskor, karaoke, dart, bada, diskussion, "
+                    "badminton, pyssel, golf, klättring, loppis, boule, mässa, "
+                    "flytthjälp, yoga, innebandy, pingis, handboll, jogga, "
+                    "tennis, högtid, astronomi, fiske, beachvolleyboll, "
+                    "friluftsliv, volleyboll, geocaching, vindsurfing, "
+                    "shuffleboard, SUP, standup, paddel".split(',')))
 
 
 def load_raw_normalized_dataset(path, drop_missing):
@@ -44,8 +59,13 @@ def load_raw_normalized_dataset(path, drop_missing):
     return events_df, tags_df
 
 
-def calculate_top_tags(tags_df, n_tags):
-    return tags_df['tag'].value_counts().index[:n_tags]
+def calculate_top_tags(tags_df, n_tags, use_cip_tags=True):
+    if use_cip_tags:
+        # Not all CiP tags are necessarily present in the dataset
+        present_tags = set(tags_df['tag'].unique())
+        return list(filter(lambda t: t in present_tags, CIP_TAGS))
+    else:
+        return tags_df['tag'].value_counts().index[:n_tags]
 
 
 def tags_to_matrix(events_df, tags_df, top_tags):
@@ -82,10 +102,16 @@ def load_datasets(path, drop_missing=True, n_tags=72,
     tag_matrix = tags_to_matrix(events_df, tags_df, top_tags)
 
     # Split data into public training set and private test set
-    # (for exercise, take tag status into account)
-    events_train, events_test, tags_train, tags_test = \
-        train_test_split(events_df, tag_matrix, test_size=test_size,
-                         random_state=random_state)
+    stratifier = IterativeStratification(
+        n_splits=2, order=2,
+        sample_distribution_per_fold=[test_size, 1.0 - test_size],
+        random_state=random_state)
+    train_indices, test_indices = next(stratifier.split(events_df, tag_matrix))
+    events_train, tags_train = events_df.iloc[train_indices], \
+                               tag_matrix[train_indices, :]
+
+    events_test, tags_test = events_df.iloc[test_indices], \
+                               tag_matrix[test_indices, :]
 
     return events_train, tags_train, events_test, tags_test, top_tags
 
@@ -103,16 +129,19 @@ def extract_corpus(events_df):
     ])
     return list(cleaning_pipeline.fit_transform(events_df['description']))
 
+
 def fasttext_wordvectors(corpus_path, model_path):
     model = fasttext.train_unsupervised(corpus_path)
     model.save_model(model_path)
     return model
+
 
 def save_corpus(events_df, path):
     corpus = extract_corpus(events_df)
     with open(path, 'w') as f:
         for doc in corpus:
             f.write(doc + '\n')
+
 
 if __name__ == '__main__':
     import os
@@ -127,3 +156,9 @@ if __name__ == '__main__':
     save_corpus(events_df, CORPUS_PATH)
     model = fasttext_wordvectors(CORPUS_PATH, MODEL_PATH)
 
+    events_train, tags_train, events_test, tags_test, top_tags = load_datasets(
+        "../../../data/raw/citypolarna_public_events_out.csv"
+    )
+
+    print(f"Number of train events: {len(events_train)}")
+    print(f"Number of test  events: {len(events_test)}")

@@ -8,8 +8,8 @@ METRICS = {
     'accuracy': accuracy_score,
     'precision': precision_score,
     'recall': recall_score,
-    'f1': f1_score,
-    'auc': roc_auc_score
+    'f1': f1_score
+    # 'auc': roc_auc_score
 }
 
 
