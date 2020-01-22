@@ -1,3 +1,5 @@
+from sklearn.pipeline import Pipeline
+
 from ._preprocessing.extract import ExtractText
 from ._preprocessing.html import HTMLToText
 from ._preprocessing.characterset import CharacterSet
