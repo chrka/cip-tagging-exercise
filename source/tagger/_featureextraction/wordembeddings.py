@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class MeanWordEmbedding(BaseEstimator, TransformerMixin):
-    def __init__(self, model_path):
+    def __init__(self, model_path="/tmp/wordvectors.bin"):
         self.model_path = model_path
 
     def fit(self, X, y=None):
@@ -24,7 +24,7 @@ class MeanWordEmbedding(BaseEstimator, TransformerMixin):
 
 
 class SumWordEmbedding(BaseEstimator, TransformerMixin):
-    def __init__(self, model_path):
+    def __init__(self, model_path="/tmp/wordvectors.bin"):
         self.model_path = model_path
 
     def fit(self, X, y=None):

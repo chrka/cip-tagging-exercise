@@ -28,4 +28,7 @@ def load_external(base_url):
     # Load NLTK stopwords
     nltk.download('stopwords')
 
+    # Setup display defaults for Pandas so that all tags are shown
+    pd.set_option('display.max_rows', 72)
+
     return (events_train, tags_train, events_test, top_tags, tags_train_stats)
