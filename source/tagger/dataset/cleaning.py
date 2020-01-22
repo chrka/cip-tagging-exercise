@@ -157,17 +157,31 @@ if __name__ == '__main__':
 
     print("Current working directory:", os.getcwd())
 
+    # Compute word vectors
     events_df, tags_df = load_raw_normalized_dataset(
         "../../../data/raw/citypolarna_public_events_out.csv",
         drop_missing=True)
-    CORPUS_PATH = '../../../data/corpus.txt'
-    MODEL_PATH = '../../../data/wordvectors.bin'
+    CORPUS_PATH = "../../../data/corpus.txt"
+    MODEL_PATH = "../../../data/wordvectors.bin"
     save_corpus(events_df, CORPUS_PATH)
     model = fasttext_wordvectors(CORPUS_PATH, MODEL_PATH)
 
+    # Split datasets
     events_train, tags_train, events_test, tags_test, top_tags, tags_train_stats = load_datasets(
         "../../../data/raw/citypolarna_public_events_out.csv"
     )
 
     print(f"Number of train events: {len(events_train)}")
     print(f"Number of test  events: {len(events_test)}")
+
+    # TODO: Proper path handling
+    DATA_PATH = "../../../data/"
+    events_train.to_csv(DATA_PATH + "events_train.csv", index=False)
+    events_test.to_csv(DATA_PATH + "events_test.csv", index=False)
+    # A kludge, but convenient — pandas can load from URL:s
+    pd.DataFrame(tags_train).to_csv(DATA_PATH + "tags_train.csv", index=False)
+    pd.DataFrame(tags_test).to_csv(DATA_PATH + "tags_test.csv", index=False)
+
+    pd.DataFrame({'tag': top_tags}).to_csv(DATA_PATH + "top_tags.csv",
+                                           index=False)
+    tags_train_stats.to_csv(DATA_PATH + "tags_train_stats.csv", index=False)
