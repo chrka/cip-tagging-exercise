@@ -22,7 +22,7 @@ CIP_TAGS = list(map(lambda x: x.strip(),
 
 
 def load_raw_normalized_dataset(path, drop_missing):
-    """Load raw dataset.
+    """Load raw CiP dataset.
 
     Args:
         path: Path to raw CSV file
@@ -61,6 +61,16 @@ def load_raw_normalized_dataset(path, drop_missing):
 
 
 def calculate_top_tags(tags_df, n_tags, use_cip_tags=True):
+    """Calculate top tags from tags dataset
+
+    Args:
+        tags_df: Dataset to extract top tags from
+        n_tags: Number of topmost tags to get if generating
+        use_cip_tags: Use pre-defined tags from CiP (ignores `n_tags`)
+
+    Returns:
+        List of topmost tags
+    """
     tag_counts = tags_df['tag'].value_counts()
     if use_cip_tags:
         # Not all CiP tags are necessarily present in the dataset
@@ -72,7 +82,16 @@ def calculate_top_tags(tags_df, n_tags, use_cip_tags=True):
 
 
 def tags_to_matrix(events_df, tags_df, top_tags):
-    """Convert tag table into matrix"""
+    """Converts tags to feature matrix
+
+    Args:
+        events_df: Events dataset
+        tags_df: Tags dataset
+        top_tags: Tags to include
+
+    Returns:
+        Feature matrix for tags
+    """
     # Combine tags into lists
     tags = tags_df.groupby('id')['tag'].agg(lambda x: list(x)).reset_index()
 
@@ -94,7 +113,19 @@ def tags_to_matrix(events_df, tags_df, top_tags):
 
 def load_datasets(path, drop_missing=True, n_tags=72,
                   test_size=0.2, random_state=42):
-    """Load and split dataset."""
+    """Load and split dataset from raw CiP data.
+
+    Args:
+        path: Path to raw CiP dataset
+        drop_missing: Drop events with no description or title
+        n_tags: Number of top tags to use (ignored)
+        test_size: Fraction of events to include in test set
+        random_state: Random state for the split
+
+    Returns:
+        (events_train, tags_train, events_test, tags_test, top_tags,
+            tags_train_stats)
+    """
     events_df, tags_df = load_raw_normalized_dataset(path,
                                                      drop_missing=drop_missing)
     top_tags = calculate_top_tags(tags_df, n_tags=n_tags)
@@ -126,7 +157,14 @@ def load_datasets(path, drop_missing=True, n_tags=72,
 
 
 def extract_corpus(events_df):
-    """Extract text corpus from event descriptions."""
+    """Extract text corpus from event descriptions.
+
+    Args:
+        events_df: Event dataset
+
+    Returns:
+        List of event descriptions as raw text
+    """
     from tagger._preprocessing.html import HTMLToText
     from tagger._preprocessing.characterset import CharacterSet
     from tagger._preprocessing.lowercase import Lowercase
@@ -140,12 +178,27 @@ def extract_corpus(events_df):
 
 
 def fasttext_wordvectors(corpus_path, model_path):
+    """Compute word vectors using FastText.
+
+    Args:
+        corpus_path: Path to corpus
+        model_path: Path for storing FastText model
+
+    Returns:
+        FastText model
+    """
     model = fasttext.train_unsupervised(corpus_path)
     model.save_model(model_path)
     return model
 
 
 def save_corpus(events_df, path):
+    """Extract and store corpus for events.
+
+    Args:
+        events_df: Events dataset
+        path: Path for storing corpus
+    """
     corpus = extract_corpus(events_df)
     with open(path, 'w') as f:
         for doc in corpus:
