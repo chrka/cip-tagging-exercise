@@ -20,8 +20,8 @@ def submit_model(model, events, *, team_name, model_name,
             'submission.csv': pd.DataFrame(tags_pred).to_csv(index=False)
         }
         data = {
-            'team': 'All about the base',
-            'model_description': 'Baseline'
+            'team': team_name,
+            'model_description': model_name
         }
 
         r = requests.post(url, data=data, files=files)
