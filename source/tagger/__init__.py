@@ -7,6 +7,7 @@ from ._preprocessing.stopwords import Stopwords
 from ._preprocessing.stemming import Stemming
 from ._preprocessing.ngram import NGram
 from ._preprocessing.dense import SparseToDense
+from sklearn.preprocessing import MaxAbsScaler
 
 from ._featureextraction.bags import BagOfWords
 from ._featureextraction.tfidf import Tfidf
