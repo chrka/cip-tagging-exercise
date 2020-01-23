@@ -15,7 +15,8 @@ setup(
     license="MIT",
     packages=find_packages(),
     install_requires=['numpy', 'pandas', 'scikit-learn', 'scikit-multilearn',
-                      'nltk', 'fasttext', 'tqdm', 'keras', 'tensorflow'],
+                      'nltk', 'fasttext', 'tqdm', 'keras', 'tensorflow',
+                      'ipython'],
     zip_safe=False,
     long_description=long_description,
     long_description_content_type='text/markdown'

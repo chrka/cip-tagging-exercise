@@ -3,6 +3,7 @@ import pandas as pd
 from pprint import pprint
 from tagger._evaluation.metrics import hamming_loss, exact_match_ratio
 
+from tagger._evaluation.overall import display_stat
 
 def submit_model(model, events, *, team_name, model_name,
                  local_tags=None,
@@ -40,5 +41,5 @@ def submit_model(model, events, *, team_name, model_name,
         emr = exact_match_ratio(local_tags, tags_pred)
 
     # TODO: Remove
-    print(f"Hamming loss for submission: {loss}")
-    print(f"Exact match ratio for submission: {emr}")
+    display_stat("Hamming loss for submission", loss)
+    display_stat("Exact match ratio for submission", emr)
