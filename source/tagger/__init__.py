@@ -1,3 +1,5 @@
+from .dataset.cleaning import matrix_to_tags
+
 from sklearn.pipeline import Pipeline
 
 from ._preprocessing.extract import ExtractText

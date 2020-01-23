@@ -4,6 +4,7 @@ import fasttext
 from sklearn.preprocessing import MultiLabelBinarizer
 from skmultilearn.model_selection import IterativeStratification, \
     iterative_train_test_split
+from functools import reduce
 
 CIP_TAGS = list(map(lambda x: x.strip(),
                     "gratis, mat, musik, kurs, casino, dans, musuem, inlines, "
@@ -111,6 +112,14 @@ def tags_to_matrix(events_df, tags_df, top_tags):
     return mlb.fit_transform(aligned_tags['tag'])
 
 
+def matrix_to_tags(tags, top_tags):
+    top_array = np.array(top_tags)
+    joined_tags = []
+    for row in tags:
+        joined_tags.append(reduce(lambda a, b: a + "," + b, top_array[row > 0]))
+    return np.array(joined_tags)
+
+
 def load_datasets(path, drop_missing=True, n_tags=72,
                   test_size=0.2, random_state=42):
     """Load and split dataset from raw CiP data.
@@ -206,6 +215,7 @@ def save_corpus(events_df, path):
 
 
 if __name__ == '__main__':
+    # Generate static datasets and wordvectors for local dev
     import os
 
     print("Current working directory:", os.getcwd())
