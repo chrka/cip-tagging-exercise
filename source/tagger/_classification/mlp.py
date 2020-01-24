@@ -6,8 +6,6 @@ from keras.models import Sequential
 from keras.optimizers import Nadam
 from keras.losses import binary_crossentropy
 
-# Hardcoded for now
-N_TOP_TAGS = 72
 
 # relu often performs better, but has a tendency to vanish
 MLP_ACTIVIATION = 'tanh'
@@ -37,7 +35,7 @@ class MultiLayerPerceptron(BaseEstimator):
             model.add(Dropout(0.5))
 
         # Output layer
-        model.add(Dense(N_TOP_TAGS, activation='sigmoid'))
+        model.add(Dense(y.shape[1], activation='sigmoid'))
 
         # We don't use any early stopping or checkpointing in order to
         # keep it simple
