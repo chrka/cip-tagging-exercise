@@ -8,7 +8,7 @@ from keras.losses import binary_crossentropy
 
 
 # relu often performs better, but has a tendency to vanish
-MLP_ACTIVIATION = 'tanh'
+MLP_ACTIVATION = 'tanh'
 
 class MultiLayerPerceptron(BaseEstimator):
     def __init__(self, layers, epochs=16, batch_size=64):
